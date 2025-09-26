@@ -1,0 +1,505 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>VisionX — Student Mental Health</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    body { font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; margin:0; background:#f6f8fb; color:#0b1220; }
+    .container{max-width:900px;margin:24px auto;padding:18px;background:white;border-radius:10px;box-shadow:0 6px 18px rgba(11,18,32,0.06);}
+    header{display:flex;align-items:center;gap:12px;}
+    h1{margin:0;font-size:20px}
+    .row{display:flex;gap:12px;align-items:center}
+    .grid{display:grid;grid-template-columns:1fr 320px;gap:18px}
+    input, select, button, textarea {font-size:14px;padding:8px;border-radius:6px;border:1px solid #d6dbe6}
+    .hidden{display:none}
+    .card{padding:12px;border-radius:8px;background:#fbfdff;border:1px solid #eef3fb}
+    .main-menu button {display:block;width:100%;margin:8px 0;padding:10px;border-radius:8px;border:0;background:#1f6feb;color:white;cursor:pointer}
+    .muted{color:#61708a;font-size:13px}
+    .chat-log{height:300px;overflow:auto;padding:12px;border-radius:8px;border:1px solid #e6eefb;background:#fff}
+    .chat-msg{margin:8px 0;padding:8px;border-radius:8px;max-width:80%}
+    .user{background:#e7f3ff;margin-left:auto}
+    .bot{background:#f1f4f9}
+    .small{font-size:13px}
+    .spinner{display:inline-block;border:3px solid rgba(0,0,0,0.08);border-top-color:#1f6feb;border-radius:50%;width:14px;height:14px;animation:spin 1s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .quote{font-style:italic;color:#475569}
+    .top-quote{margin:12px 0;background:#f8fbff;padding:10px;border-radius:8px}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <img src="" alt="" style="width:48px;height:48px;background:#e6f0ff;border-radius:10px;">
+      <div>
+        <h1>VisionX — Digital Mental Health Support</h1>
+        <div class="muted">Holistic care: AI guidance + Yoga + Meditation — accessible in regional languages</div>
+      </div>
+    </header>
+
+    <!-- Setup screen -->
+    <div id="setupScreen" class="card" style="margin-top:16px;">
+      <h3>Welcome — quick setup</h3>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <input id="state" placeholder="State" />
+        <input id="district" placeholder="District" />
+        <input id="institute" placeholder="Institute/College" style="flex:1" />
+        <input id="pincode" placeholder="Pincode" style="width:120px" />
+      </div>
+      <div style="margin-top:8px;">
+        <label>Preferred language: </label>
+        <select id="language">
+          <option value="en">English</option>
+          <option value="hi">Hindi</option>
+          <option value="bn">Bengali</option>
+          <option value="mr">Marathi</option>
+        </select>
+        <button id="setupContinue" style="margin-left:12px">Continue</button>
+      </div>
+    </div>
+
+    <!-- Role selection -->
+    <div id="roleScreen" class="card hidden" style="margin-top:16px;">
+      <h3>Role</h3>
+      <div class="row">
+        <button id="studentBtn">Student Login</button>
+        <button id="managementBtn" style="background:#111827;color:white">Management Login</button>
+      </div>
+    </div>
+
+    <!-- Login / Signup -->
+    <div id="loginScreen" class="card hidden" style="margin-top:16px;">
+      <h3 id="loginTitle">Student Login</h3>
+      <form id="loginForm">
+        <div style="display:flex;gap:8px;">
+          <input id="loginCollegeId" placeholder="College ID" required />
+          <input id="loginPassword" placeholder="Password" type="password" required />
+          <button type="submit">Login</button>
+        </div>
+      </form>
+      <div style="margin-top:8px;">
+        <button id="showSignup">New user? Signup</button>
+      </div>
+    </div>
+
+    <div id="signupScreen" class="card hidden" style="margin-top:16px;">
+      <h3>Signup</h3>
+      <form id="signupForm">
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <input id="suCollegeId" placeholder="College ID" required />
+          <input id="suPassword" placeholder="Password" type="password" required />
+          <select id="suRole"><option value="student">Student</option><option value="management">Management</option></select>
+          <button type="submit">Create account</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Main app grid -->
+    <div id="appScreen" class="grid hidden" style="margin-top:18px;">
+      <div>
+        <div class="top-quote">
+          <div class="quote">"You can achieve anything" — keep going.</div>
+        </div>
+
+        <div class="card" style="margin-bottom:12px;">
+          <h4>Main Menu</h4>
+          <div class="main-menu">
+            <button id="openChat">Chat with AI Advisor</button>
+            <button id="openCheckup" style="background:#059669">Self Check-up</button>
+            <button id="openMindBody" style="background:#0ea5e9">Mind-Body Enrichment</button>
+            <button id="openRelax" style="background:#f97316">Relaxation Space</button>
+            <button id="openHelpline" style="background:#ef4444">Helpline & Support</button>
+            <button id="logoutBtn" style="background:#94a3b8">Logout</button>
+          </div>
+          <div class="muted small" style="margin-top:8px">Your reports (if you complete self check-up) can be shared with your institute if you sign in.</div>
+        </div>
+
+        <!-- Chat card -->
+        <div id="chatCard" class="card hidden">
+          <h4>Chat with AI Advisor</h4>
+          <div id="chatLog" class="chat-log"></div>
+          <div style="display:flex;gap:8px;margin-top:8px;">
+            <input id="userMessage" placeholder="Type something — e.g. 'breathing' or 'I feel anxious'..." style="flex:1" />
+            <button id="sendBtn">Send</button>
+          </div>
+          <div id="chatNote" class="muted small" style="margin-top:8px">This chat is for support and does not replace emergency services.</div>
+        </div>
+
+        <!-- Checkup -->
+        <div id="checkupCard" class="card hidden">
+          <h4>Self Check-up</h4>
+          <div id="qList"></div>
+          <div style="margin-top:8px">
+            <button id="submitCheckup" style="background:#059669">Submit</button>
+          </div>
+          <div id="checkupResult" class="hidden" style="margin-top:12px"></div>
+        </div>
+
+        <!-- Mind-body -->
+        <div id="mindBodyCard" class="card hidden">
+          <h4>Mind-Body Enrichment</h4>
+          <div>
+            <h5>Breathing</h5>
+            <div class="muted">Inhale 4s — hold 4s — exhale 6s. Repeat 6 times.</div>
+            <h5>Yoga Asanas</h5>
+            <ul>
+              <li>Tadasana (Mountain Pose) — helps grounding</li>
+              <li>Balasana (Child's Pose) — calming</li>
+            </ul>
+            <h5>Mudras</h5>
+            <div class="muted">Gyan mudra: index finger + thumb — for focus.</div>
+          </div>
+        </div>
+
+        <!-- Relax -->
+        <div id="relaxCard" class="card hidden">
+          <h4>Relaxation Space</h4>
+          <div class="muted">Play relaxing music and quick video clips to lift mood.</div>
+          <audio controls id="relaxAudio" src="" style="width:100%;margin-top:8px"></audio>
+          <div style="margin-top:8px;">
+            <button id="playSampleAudio">Load Sample Audio</button>
+          </div>
+        </div>
+
+        <!-- Helpline -->
+        <div id="helplineCard" class="card hidden">
+          <h4>Helpline & Support</h4>
+          <div id="helplineList">Loading...</div>
+        </div>
+
+      </div>
+
+      <!-- Right column / summary -->
+      <div>
+        <div class="card">
+          <h4>Your profile</h4>
+          <div id="profileInfo" class="muted small">Not signed in</div>
+        </div>
+
+        <div id="reportsCard" class="card" style="margin-top:12px;">
+          <h4>Recent checkups</h4>
+          <div id="recentList" class="muted small">No data</div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+<script>
+/* -------------------------
+   Config & helpers
+   ------------------------- */
+const API_BASE = (location.hostname === 'localhost' || location.hostname === '127.0.0.1') ? 'http://127.0.0.1:8000/api' : '/api';
+
+function setToken(t){ localStorage.setItem('vx_token', t); }
+function getToken(){ return localStorage.getItem('vx_token'); }
+function authHeaders(){ const t=getToken(); return t? {'Authorization':'Bearer '+t}:{}; }
+function el(id){return document.getElementById(id);}
+
+/* -------------------------
+   Screens & UI wiring
+   ------------------------- */
+const setupScreen = el('setupScreen');
+const roleScreen = el('roleScreen');
+const loginScreen = el('loginScreen');
+const signupScreen = el('signupScreen');
+const appScreen = el('appScreen');
+const chatCard = el('chatCard');
+const checkupCard = el('checkupCard');
+const mindBodyCard = el('mindBodyCard');
+const relaxCard = el('relaxCard');
+const helplineCard = el('helplineCard');
+const profileInfo = el('profileInfo');
+const recentList = el('recentList');
+
+let currentRole = 'student'; // default
+let userProfile = null;
+let questions = [
+  "I have felt down or sad most of the day",
+  "I have trouble sleeping or sleep too much",
+  "I have trouble concentrating on studies",
+  "I feel anxious or worried regularly",
+  "I avoid friends or social activities",
+  "I have had thoughts of harming myself"
+];
+// answers will be 0..3 scale
+let answers = [];
+
+/* Setup flow */
+el('setupContinue').onclick = () => {
+  // store setup details for later (not required to send to backend yet)
+  const setup = {
+    state: el('state').value,
+    district: el('district').value,
+    institute: el('institute').value,
+    pincode: el('pincode').value,
+    language: el('language').value
+  };
+  localStorage.setItem('vx_setup', JSON.stringify(setup));
+  setupScreen.classList.add('hidden');
+  roleScreen.classList.remove('hidden');
+};
+
+el('studentBtn').onclick = () => { currentRole='student'; roleScreen.classList.add('hidden'); loginScreen.classList.remove('hidden'); el('loginTitle').innerText='Student Login'; }
+el('managementBtn').onclick = () => { currentRole='management'; roleScreen.classList.add('hidden'); loginScreen.classList.remove('hidden'); el('loginTitle').innerText='Management Login'; }
+
+/* Signup / Login */
+el('showSignup').onclick = () => { loginScreen.classList.add('hidden'); signupScreen.classList.remove('hidden'); }
+el('signupForm').onsubmit = async (e) => {
+  e.preventDefault();
+  const collegeId = el('suCollegeId').value.trim();
+  const password = el('suPassword').value;
+  const role = el('suRole').value;
+  const setup = JSON.parse(localStorage.getItem('vx_setup')||'{}');
+  try {
+    const res = await fetch(API_BASE+'/auth/signup', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        collegeId,password,role,
+        state: setup.state, district: setup.district, instituteName: setup.institute, pincode: setup.pincode, language: setup.language
+      })
+    });
+    const j = await res.json();
+    if(!res.ok){ alert(j.detail || j.error || 'Signup failed'); return; }
+    setToken(j.token);
+    await afterLogin();
+  } catch(err){ console.error(err); alert('Network error'); }
+};
+
+el('loginForm').onsubmit = async (e) => {
+  e.preventDefault();
+  const collegeId = el('loginCollegeId').value.trim();
+  const password = el('loginPassword').value;
+  try {
+    const res = await fetch(API_BASE+'/auth/login', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ collegeId, password })
+    });
+    const j = await res.json();
+    if(!res.ok){ alert(j.detail || j.error || 'Login failed'); return; }
+    setToken(j.token);
+    await afterLogin();
+  } catch(err){ console.error(err); alert('Network error'); }
+};
+
+async function afterLogin(){
+  // fetch profile from token (we stored collegeId in token payload)
+  const t = getToken();
+  if(!t) return;
+  // naive decode: token is jwt without verifying — for UI only
+  try {
+    const parts = t.split('.');
+    const payload = JSON.parse(atob(parts[1]));
+    userProfile = { collegeId: payload.college_id, role: payload.role || 'student' };
+  } catch(e){ userProfile = null; }
+  profileInfo.innerText = userProfile ? Signed in: ${userProfile.collegeId} (${userProfile.role}) : 'Signed in';
+  loginScreen.classList.add('hidden');
+  signupScreen.classList.add('hidden');
+  appScreen.classList.remove('hidden');
+  loadHelplines();
+  loadRecent();
+}
+
+/* Logout */
+el('logoutBtn').onclick = () => {
+  localStorage.removeItem('vx_token');
+  userProfile = null;
+  profileInfo.innerText = 'Not signed in';
+  appScreen.classList.add('hidden');
+  loginScreen.classList.remove('hidden');
+};
+
+/* Main menu wiring */
+el('openChat').onclick = () => showOnly('chat');
+el('openCheckup').onclick = () => showOnly('checkup');
+el('openMindBody').onclick = () => showOnly('mind');
+el('openRelax').onclick = () => showOnly('relax');
+el('openHelpline').onclick = () => showOnly('helpline');
+
+function showOnly(name){
+  chatCard.classList.add('hidden');
+  checkupCard.classList.add('hidden');
+  mindBodyCard.classList.add('hidden');
+  relaxCard.classList.add('hidden');
+  helplineCard.classList.add('hidden');
+  if(name==='chat') chatCard.classList.remove('hidden');
+  if(name==='checkup') {
+    checkupCard.classList.remove('hidden');
+    renderQuestions();
+  }
+  if(name==='mind') mindBodyCard.classList.remove('hidden');
+  if(name==='relax') relaxCard.classList.remove('hidden');
+  if(name==='helpline') helplineCard.classList.remove('hidden');
+}
+
+/* -------------------------
+   Chat implementation
+   ------------------------- */
+const chatLog = el('chatLog');
+el('sendBtn').onclick = sendMessage;
+el('userMessage').addEventListener('keydown', (e)=>{ if(e.key==='Enter'){ e.preventDefault(); sendMessage(); }});
+
+function addChat(role, text){
+  const d = document.createElement('div');
+  d.className = 'chat-msg ' + (role==='user'?'user':'bot');
+  d.innerText = text;
+  chatLog.appendChild(d);
+  chatLog.scrollTop = chatLog.scrollHeight;
+}
+
+async function sendMessage(){
+  const input = el('userMessage');
+  const text = input.value.trim();
+  if(!text) return;
+  input.value = '';
+  addChat('user', text);
+  const waiting = document.createElement('div');
+  waiting.className = 'chat-msg bot';
+  waiting.innerHTML = '<span class="spinner"></span> Thinking...';
+  chatLog.appendChild(waiting);
+  chatLog.scrollTop = chatLog.scrollHeight;
+  try {
+    const res = await fetch(API_BASE+'/chat', {
+      method:'POST',
+      headers: Object.assign({'Content-Type':'application/json'}, authHeaders()),
+      body: JSON.stringify({ message: text })
+    });
+    const j = await res.json();
+    waiting.remove();
+    addChat('bot', j.response || j.detail || 'No response.');
+  } catch(err){
+    waiting.remove();
+    addChat('bot', '⚠ Could not reach server. Try again later.');
+    console.error(err);
+  }
+}
+
+/* -------------------------
+   Self checkup
+   ------------------------- */
+function renderQuestions(){
+  const container = el('qList');
+  container.innerHTML = '';
+  answers = new Array(questions.length).fill(0);
+  questions.forEach((q, idx)=>{
+    const box = document.createElement('div');
+    box.style.margin = '8px 0';
+    box.innerHTML = <div style="font-weight:600">${q}</div>;
+    const radios = document.createElement('div');
+    radios.style.display='flex';radios.style.gap='8px';radios.style.marginTop='6px';
+    ['Not at all','Several days','More than half','Nearly every day'].forEach((label,val)=>{
+      const id = 'q'+idx+'_'+val;
+      const r = document.createElement('label');
+      r.className='small';
+      r.style.display='flex';
+      r.style.alignItems='center';
+      r.style.gap='6px';
+      r.innerHTML = <input type="radio" name="q${idx}" value="${val}" ${val===0?'checked':''}> ${label};
+      radios.appendChild(r);
+    });
+    box.appendChild(radios);
+    container.appendChild(box);
+    // listener
+    radios.querySelectorAll('input').forEach(inp=>{
+      inp.addEventListener('change', ()=>{
+        answers[idx] = parseInt(inp.value || 0) || 0;
+      });
+    });
+  });
+  // default mapping: Not at all=0, Several days=1, More than half=2, Nearly every day=3
+  // ensure initial defaults
+  const radios = container.querySelectorAll('input');
+  radios.forEach(r=>{ if(r.value==='0') r.checked=true; });
+  // map string values to numbers on change
+  container.querySelectorAll('input').forEach(inp=>{
+    inp.addEventListener('change', (e)=>{
+      const mapping = {'Not at all':0,'Several days':1,'More than half':2,'Nearly every day':3};
+      const name = e.target.name; const qi = parseInt(name.replace('q',''));
+      answers[qi] = mapping[e.target.value] ?? 0;
+    });
+  });
+}
+
+el('submitCheckup').onclick = async ()=>{
+  // ensure answers filled
+  if(answers.length===0) { alert('No questions found'); return; }
+  const score = answers.reduce((a,b)=>a+Number(b),0);
+  let severity = 'low';
+  if(score <= 5) severity='low';
+  else if(score <= 12) severity='mild';
+  else severity='high';
+  const msg = Score: ${score} — Severity: ${severity};
+  el('checkupResult').classList.remove('hidden');
+  el('checkupResult').innerText = msg;
+  // send to backend if logged in
+  if(getToken()){
+    try {
+      const res = await fetch(API_BASE+'/test/submit', {
+        method:'POST',
+        headers: Object.assign({'Content-Type':'application/json'}, authHeaders()),
+        body: JSON.stringify({ answers })
+      });
+      const j = await res.json();
+      if(!res.ok){ console.warn('submit error', j); }
+      else { console.log('Saved test', j); loadRecent(); }
+    } catch(e){ console.error(e); localStorage.setItem('pending_test', JSON.stringify({answers})); }
+  } else {
+    // store locally and suggest login
+    localStorage.setItem('pending_test', JSON.stringify({answers}));
+    alert('Result saved locally. Sign in to send the report to your institute.');
+  }
+};
+
+/* -------------------------
+   Helplines & recent
+   ------------------------- */
+async function loadHelplines(){
+  el('helplineList').innerText = 'Loading...';
+  try {
+    const res = await fetch(API_BASE+'/helplines');
+    const j = await res.json();
+    const list = j.helplines || [];
+    const container = el('helplineList');
+    container.innerHTML = '';
+    list.forEach(h=>{
+      const d = document.createElement('div');
+      d.style.margin='8px 0';
+      d.innerHTML = <div style="font-weight:600">${h.name}</div><div class="muted">${h.number} — ${h.notes||''}</div>;
+      container.appendChild(d);
+    });
+  } catch(e){
+    el('helplineList').innerText = 'Could not load helplines.';
+  }
+}
+
+async function loadRecent(){
+  // for demo: fetch management reports only if role=management
+  if(userProfile && userProfile.role==='management'){
+    try {
+      const res = await fetch(API_BASE+'/management/reports', { headers: authHeaders() });
+      const j = await res.json();
+      if(!res.ok) { recentList.innerText = 'Error fetching reports'; return; }
+      recentList.innerHTML = j.recent.slice(0,10).map(r=>[${new Date(r.created_at).toLocaleString()}] ${r.college_id} — ${r.score} (${r.severity})).join('<br>');
+    } catch(e){ recentList.innerText = 'No recent data'; }
+    return;
+  }
+  // otherwise read user's own recent test results (local only)
+  const p = localStorage.getItem('pending_test');
+  recentList.innerText = p ? 'You have a local unsent checkup.' : 'No local reports';
+}
+
+/* Relaxation audio demo */
+el('playSampleAudio').onclick = ()=>{
+  const a = el('relaxAudio');
+  a.src = 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3';
+  a.play();
+};
+
+/* On load: if token exists, call afterLogin */
+window.addEventListener('load', async ()=>{
+  if(getToken()) await afterLogin();
+});
+</script>
+</body>
+</html>
